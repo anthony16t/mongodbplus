@@ -150,7 +150,51 @@ class MongodbPlus:
             for itemId,itemData in collectionItems.items():
                 itemData['_id']=int(itemId)
                 self.C_O_L_L_E_C_T_I_O_N(collectionName).insert_one(itemData)
-        
+    
+    def addKey(self,keyAndDefaultValue:dict,collectionName:str=''):
+        # check if collection name was setted
+        if collectionName: collectionName=collectionName
+        elif self.__wasCollectionSet__: collectionName=self.collectionName
+        else: self.__printCollectionNameError__() ; return False
+        # check if more than one key was given
+        if len(keyAndDefaultValue) > 1:
+            print(f'{Colors.fail}key and default value only take one key{Colors.end}')
+            return False
+        # get last id and last id data
+        lastId = self.count({},collectionName)
+        lastIdData = self.findOne({'_id':lastId})
+        keyName,keyValue=list(keyAndDefaultValue)[0],keyAndDefaultValue[list(keyAndDefaultValue)[0]]
+        # check if key name alredy exists in last id data
+        if keyName in lastIdData:
+            print(f'{Colors.fail}The key >> {keyName} << already exists{Colors.end}')
+            return False
+        # else run the codeeeee
+        numUpdated=0
+        allDocuments = self.findMany({},collectionName)
+        for item in allDocuments:
+            item[keyName]=keyValue
+            # update current item
+            self.updateOne({'_id':item['_id']},item)
+            numUpdated=numUpdated+1
+        print(f'{Colors.good}The key >> {keyName} << added to {numUpdated} documents{Colors.end}')
+        return True
+
+    def removeKey(self,keyName:str,collectionName:str=''):
+        # check if collection name was setted
+        if collectionName: collectionName=collectionName
+        elif self.__wasCollectionSet__: collectionName=self.collectionName
+        else: self.__printCollectionNameError__() ; return False
+        numUpdated=0
+        allDocuments = self.findMany({},collectionName)
+        for item in allDocuments:
+            if keyName in item:
+                # update current item
+                col = self.C_O_L_L_E_C_T_I_O_N(collectionName)
+                col.update_one({'_id':item['_id']},{'$unset': {keyName:{ '$exists':True}}})
+                numUpdated=numUpdated+1
+        print(f'{Colors.good}{numUpdated} documents where updated{Colors.end}')
+        return True
+
     def C_O_L_L_E_C_T_I_O_N(self,collectionName:str): return self.__mongoDb[collectionName]
     def M_O_N_G_O_C_L_I_E_N_T(self): return self.__mongoClient
     def __printCollectionNameError__(self):
