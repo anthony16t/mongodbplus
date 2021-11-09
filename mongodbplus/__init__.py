@@ -195,6 +195,14 @@ class MongodbPlus:
         print(f'{Colors.good}{numUpdated} documents where updated{Colors.end}')
         return True
 
+    def aggregate(self,pipeLine:list,collectionName:str):
+        # check if collection name was setted
+        if collectionName: collectionName=collectionName
+        elif self.__wasCollectionSet__: collectionName=self.collectionName
+        else: self.__printCollectionNameError__() ; return False
+        col = self.__mongoDb[collectionName]
+        return col.aggregate(pipeLine)
+
     def C_O_L_L_E_C_T_I_O_N(self,collectionName:str): return self.__mongoDb[collectionName]
     def M_O_N_G_O_C_L_I_E_N_T(self): return self.__mongoClient
     def __printCollectionNameError__(self):

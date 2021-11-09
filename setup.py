@@ -12,9 +12,9 @@ classifiers = [
 
 setup(
     name='mongodbplus',
-    version='0.1',
-    description='Use json pymongo with a bit of sugar.',
-    long_description='Use json pymongo with a bit of sugar.',
+    version='0.2',
+    description='Use pymongo with a bit of sugar.',
+    long_description='Use pymongo with a bit of sugar.',
     url='https://github.com/anthony16t/jsonfiles',  
     author='anthony16t',
     author_email='info@anthony16t.com',
