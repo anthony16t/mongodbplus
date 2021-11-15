@@ -15,7 +15,7 @@ setup(
     version='0.2',
     description='Use pymongo with a bit of sugar.',
     long_description='Use pymongo with a bit of sugar.',
-    url='https://github.com/anthony16t/jsonfiles',  
+    url='https://github.com/anthony16t/mongodbplus',  
     author='anthony16t',
     author_email='info@anthony16t.com',
     license='MIT', 

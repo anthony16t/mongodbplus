@@ -82,29 +82,57 @@ class MongodbPlus:
         result = col.update_many(filter,{'$set':newData})
         return result
 
-    def insertOne(self,document:dict={},collectionName:str=''):
+    def insertOne(self,document:dict={},collectionName:str='',checkDuplicate:bool=False,duplicateKey:str=''):
         # check if collection name was setted
         if collectionName: collectionName=collectionName
         elif self.__wasCollectionSet__: collectionName=self.collectionName
         else: self.__printCollectionNameError__() ; return False
         col = self.__mongoDb[collectionName]
-        newId = col.count_documents({}) + 1
-        document['_id']=newId
+        # check if _id was given if yes check if it exists
+        if '_id' in document:
+            _id=document['_id']
+            if col.find_one({'_id':_id}):
+                print(f'{Colors.fail}Document with _id: {_id} already exists when trying to insert {self.cuteME(document)}{Colors.end}') ; return False
+        # if check duplicate is set to true
+        if checkDuplicate:
+            if not duplicateKey:
+                print(f'{Colors.fail}DuplicateKey can not be empty if you setted checkDuplicate=True{Colors.end}')
+                return False
+            if duplicateKey not in document:
+                print(f'{Colors.fail}DuplicateKey: {duplicateKey} not found in {self.cuteME(document)}{Colors.end}')
+                return False
+            if col.find_one({duplicateKey:document[duplicateKey]}):
+                keyName,keyValue=duplicateKey,document[duplicateKey]
+                print(f'{Colors.fail}Key: {keyName} with value: {keyValue} already exists{Colors.end}') ; return False
+        # else insert
         result = col.insert_one(document)
         return result
 
-    def insertMany(self,listOfDocuments:list=[],collectionName:str=''):
+    def insertMany(self,listOfDocuments:list=[],collectionName:str='',checkDuplicate:bool=False,duplicateKey:str=''):
         # check if collection name was setted
         if collectionName: collectionName=collectionName
         elif self.__wasCollectionSet__: collectionName=self.collectionName
         else: self.__printCollectionNameError__() ; return False
         col = self.__mongoDb[collectionName]
-        newId = col.count_documents({}) + 1
         newDocumentData=[]
-        for d in listOfDocuments:
-            d['_id']=newId
-            newDocumentData.append(d)
-            newId=newId+1
+        for document in listOfDocuments:
+            # check if _id was given if yes check if it exists
+            if '_id' in document:
+                _id=document['_id']
+                if col.find_one({'_id':_id}):
+                    print(f'{Colors.fail}Document with _id: {_id} already exists when trying to insert {self.cuteME(document)}{Colors.end}') ; return False
+            # if check duplicate is set to true
+            if checkDuplicate:
+                if not duplicateKey:
+                    print(f'{Colors.fail}DuplicateKey can not be empty if you setted checkDuplicate=True{Colors.end}')
+                    return False
+                if duplicateKey not in document:
+                    print(f'{Colors.fail}DuplicateKey: {duplicateKey} not found in {self.cuteME(document)}{Colors.end}')
+                    return False
+                if col.find_one({duplicateKey:document[duplicateKey]}):
+                    keyName,keyValue=duplicateKey,document[duplicateKey]
+                    print(f'{Colors.fail}Key: {keyName} with value: {keyValue} already exists{Colors.end}') ; return False
+            newDocumentData.append(document)
         result = col.insert_many(newDocumentData)
         return result
 
@@ -164,11 +192,11 @@ class MongodbPlus:
         lastId = self.count({},collectionName)
         lastIdData = self.findOne({'_id':lastId})
         keyName,keyValue=list(keyAndDefaultValue)[0],keyAndDefaultValue[list(keyAndDefaultValue)[0]]
-        # check if key name alredy exists in last id data
+        # check if key name already exists in last id data
         if keyName in lastIdData:
             print(f'{Colors.fail}The key >> {keyName} << already exists{Colors.end}')
             return False
-        # else run the codeeeee
+        # else run the code
         numUpdated=0
         allDocuments = self.findMany({},collectionName)
         for item in allDocuments:
