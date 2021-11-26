@@ -1,4 +1,4 @@
-from pymongo import MongoClient as CLIENT
+from pymongo import MongoClient as CLIENT, collation
 import json,os
 class Colors: fail = '\033[91m' ; good = '\033[92m' ; end = '\033[0m'
 class MongodbPlus:
@@ -240,14 +240,6 @@ class MongodbPlus:
             default[collectionName]['lastId']=newId
             open(self.defaultPath,'w').write(json.dumps(default,indent=4))
         return {'idsInserted':idsInserted}
-
-    def drop(self,collectionName:str=''):
-        # check if collection name was setted
-        if collectionName: collectionName=collectionName
-        elif self.__wasCollectionSet__: collectionName=self.collectionName
-        else: self.__printCollectionNameError__() ; return False
-        result = self.__mongoDb.drop_collection(collectionName)
-        return result
     
     def dropCollection(self,collections:list):
         for collectionName in collections:
